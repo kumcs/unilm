@@ -376,9 +376,7 @@ class VQAv2Dataset(BaseDataset):
         elif split == "val":
             return ("vqa.rest_val.jsonl", )
         elif split == "test":
-            return ("vqa.test.jsonl", )
-        elif split == "test-dev":
-            return ("vqa.test-dev.jsonl", )            
+            return ("vqa.test.jsonl", )          
         else:
             raise RuntimeError("split %s is not found!" % split)
 
@@ -408,25 +406,23 @@ class VQAv2Dataset(BaseDataset):
 
     @classmethod
     def make_dataset_index(cls, data_path, tokenizer, annotation_data_path):
-        with open(os.path.join(annotation_data_path, "v2_OpenEnded_mscoco_train2014_questions.json"), "r") as fp:
-            questions_train2014 = json.load(fp)["questions"]
-        with open(os.path.join(annotation_data_path, "v2_OpenEnded_mscoco_val2014_questions.json"), "r") as fp:
-            questions_val2014 = json.load(fp)["questions"]
-        with open(os.path.join(annotation_data_path, "v2_OpenEnded_mscoco_test2015_questions.json"), "r") as fp:
-            questions_test2015 = json.load(fp)["questions"]
-        with open(os.path.join(annotation_data_path, "v2_OpenEnded_mscoco_test-dev2015_questions.json"), "r") as fp:
-            questions_test_dev2015 = json.load(fp)["questions"]
+        with open(os.path.join(annotation_data_path, "v2_OpenEnded_vizwiz_train_questions.json"), "r") as fp:
+            questions_train = json.load(fp)["questions"]
+        with open(os.path.join(annotation_data_path, "v2_OpenEnded_vizwiz_val_questions.json"), "r") as fp:
+            questions_val = json.load(fp)["questions"]
+        with open(os.path.join(annotation_data_path, "v2_OpenEnded_vizwiz_test_questions.json"), "r") as fp:
+            questions_test = json.load(fp)["questions"]        
 
-        with open(os.path.join(annotation_data_path, "v2_mscoco_train2014_annotations.json"), "r") as fp:
-            annotations_train2014 = json.load(fp)["annotations"]
-        with open(os.path.join(annotation_data_path, "v2_mscoco_val2014_annotations.json"), "r") as fp:
-            annotations_val2014 = json.load(fp)["annotations"]
+        with open(os.path.join(annotation_data_path, "v2_vizwiz_train_annotations.json"), "r") as fp:
+            annotations_train = json.load(fp)["annotations"]
+        with open(os.path.join(annotation_data_path, "v2_vizwiz_val_annotations.json"), "r") as fp:
+            annotations_val = json.load(fp)["annotations"]
 
         annotations = dict()
 
         for split, questions in zip(
-            ["train", "val", "test", "test-dev"],
-            [questions_train2014, questions_val2014, questions_test2015, questions_test_dev2015],
+            ["train", "val", "test"],
+            [questions_train, questions_val, questions_test],
         ):
             _annot = defaultdict(dict)
             for q in questions:
@@ -445,7 +441,7 @@ class VQAv2Dataset(BaseDataset):
         all_major_answers = list()
 
         for split, annots in zip(
-            ["train", "val"], [annotations_train2014, annotations_val2014],
+            ["train", "val"], [annotations_train, annotations_val],
         ):
             # _annot = annotations[split]
             for q in annots:
@@ -457,7 +453,7 @@ class VQAv2Dataset(BaseDataset):
         label2ans = list(counter.keys())
 
         for split, annots in zip(
-            ["train", "val"], [annotations_train2014, annotations_val2014],
+            ["train", "val"], [annotations_train, annotations_val],
         ):
             _annot = annotations[split]
             for q in annots:
@@ -493,13 +489,12 @@ class VQAv2Dataset(BaseDataset):
             annotations[split] = filtered_annot
 
         split2items = {}
-        for split in ["train", "val", "test", "test-dev"]:
+        for split in ["train", "val", "test"]:
             annot = annotations[split]
             split_name = {
-                "train": "train2014",
-                "val": "val2014",
-                "test": "test2015",
-                "test-dev": "test2015",
+                "train": "train",
+                "val": "val",
+                "test": "test"
             }[split]
             paths = list(glob.glob(f"{data_path}/{split_name}/*.jpg"))
             random.shuffle(paths)
